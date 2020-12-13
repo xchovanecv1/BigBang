@@ -113,6 +113,13 @@ win32 {
     debug:LIBPATH += debug/lib
     release:LIBPATH += release/lib
 }
+
+copydata.commands = $(COPY_DIR) $$PWD/data $$OUT_PWD
+first.depends = $(first) copydata
+export(first.depends)
+export(copydata.commands)
+QMAKE_EXTRA_TARGETS += first copydata
+
 LIBS += -lkbang_common
 TARGET = kbang-client
 QMAKE_CXXFLAGS_DEBUG += -Wall
