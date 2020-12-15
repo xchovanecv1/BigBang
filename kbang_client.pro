@@ -114,7 +114,7 @@ win32 {
     release:LIBPATH += release/lib
 }
 
-copydata.commands = $(COPY_DIR) $$PWD/data $$OUT_PWD
+copydata.commands = $(COPY_DIR) $$shell_path($$PWD/data) $$shell_path($$OUT_PWD)
 first.depends = $(first) copydata
 export(first.depends)
 export(copydata.commands)
