@@ -107,18 +107,28 @@ SOURCES += src/client/gameloop.cpp \
 unix { 
     LIBPATH += lib
     TARGETDEPS += lib/libkbang_common.a
+
+    copydata.commands = $(COPY_DIR) $$shell_path($$PWD/data) $$shell_path($$OUT_PWD)
+    first.depends = $(first) copydata
+    export(first.depends)
+    export(copydata.commands)
+    QMAKE_EXTRA_TARGETS += first copydata
+
 }
 win32 { 
     RC_FILE = kbang_client.rc
     debug:LIBPATH += debug/lib
     release:LIBPATH += release/lib
-}
 
-copydata.commands = $(COPY_DIR) $$shell_path($$PWD/data) $$shell_path($$OUT_PWD)
-first.depends = $(first) copydata
-export(first.depends)
-export(copydata.commands)
-QMAKE_EXTRA_TARGETS += first copydata
+    PWD_WIN = $${PWD}
+    DESTDIR_WIN = $${OUT_PWD}
+    PWD_WIN ~= s,/,\\,g
+    DESTDIR_WIN ~= s,/,\\,g
+
+    copyfiles.commands = $$quote(cmd /c xcopy /S /I $${PWD_WIN}\\data $${DESTDIR_WIN})
+    QMAKE_EXTRA_TARGETS += copyfiles
+    POST_TARGETDEPS += copyfiles
+}
 
 LIBS += -lkbang_common
 TARGET = kbang-client
