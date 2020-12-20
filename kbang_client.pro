@@ -4,8 +4,8 @@ MOC_DIR = mocs/client
 RCC_DIR = rccs/client
 OBJECTS_DIR = obj/client
 CONFIG += qt
-CONFIG += release \
-    warn_on
+#CONFIG += release \
+#    warn_on
 QT += network xml multimedia gui
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 greaterThan(QT_MAJOR_VERSION, 4): DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x000000
@@ -104,31 +104,28 @@ SOURCES += src/client/gameloop.cpp \
     src/client/gamemessageevent.cpp \
     src/client/cardwidgetsizemanager.cpp \
     src/client/aboutdialog.cpp
+
+CONFIG(debug, debug|release) {
+    DESTDIR = $$OUT_PWD/debug
+} else {
+    DESTDIR = $$OUT_PWD/release
+}
+
 unix { 
     LIBPATH += lib
     TARGETDEPS += lib/libkbang_common.a
-
-    copydata.commands = $(COPY_DIR) $$shell_path($$PWD/data) $$shell_path($$OUT_PWD)
-    first.depends = $(first) copydata
-    export(first.depends)
-    export(copydata.commands)
-    QMAKE_EXTRA_TARGETS += first copydata
-
 }
 win32 { 
     RC_FILE = kbang_client.rc
     debug:LIBPATH += debug/lib
     release:LIBPATH += release/lib
-
-    PWD_WIN = $${PWD}
-    DESTDIR_WIN = $${OUT_PWD}
-    PWD_WIN ~= s,/,\\,g
-    DESTDIR_WIN ~= s,/,\\,g
-
-    copyfiles.commands = $$quote(cmd /c xcopy /Y /S /I $${PWD_WIN}\\data $${DESTDIR_WIN})
-    QMAKE_EXTRA_TARGETS += copyfiles
-    POST_TARGETDEPS += copyfiles
 }
+
+copydata.commands = $(COPY_DIR) $$shell_path($$PWD/data) $$shell_path($$DESTDIR/data)
+first.depends = $(first) copydata
+export(first.depends)
+export(copydata.commands)
+QMAKE_EXTRA_TARGETS += first copydata
 
 LIBS += -lkbang_common
 TARGET = kbang-client
