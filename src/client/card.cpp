@@ -189,13 +189,13 @@ QString Card::rankToString(CardRank rank) {
 QChar Card::suitToChar(CardSuit suit) {
     switch (suit) {
         case SUIT_CLUBS:
-            return 0x2663;
+            return QChar(0x2663);
         case SUIT_DIAMONDS:
-            return 0x2666;
+            return QChar(0x2666);
         case SUIT_HEARTS:
-            return 0x2665;
+            return QChar(0x2665);
         case SUIT_SPADES:
-            return 0x2660;
+            return QChar(0x2660);
     }
     NOT_REACHED();
     return QChar();

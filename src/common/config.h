@@ -22,21 +22,30 @@
 
 #include "util.h"
 
+#include <QSettings>
 #include <QtCore>
 
 /**
  * The config class provides a way to handle configuration files and commandline
  * arguments. This class is a singleton.
  * @author MacJariel <echo "badmailet@gbalt.dob" | tr "edibmlt" "ecrmjil">
-*/
-class Config: private NonCopyable {
+ */
+class Config : private NonCopyable, QSettings {
 
 public:
-    QString         readString(QString group, QString varName);
-    QStringList  readStringList(QString group, QString varName);
-    int             readInt(QString group, QString varName);
-    QList<int>      readIntList(QString group, QString varName);
+    QString readString(QString group, QString varName);
+    QStringList readStringList(QString group, QString varName);
+    int readInt(QString group, QString varName);
+    QList<int> readIntList(QString group, QString varName);
 
+    QVariantList readVariantList(QString group, QString varName);
+
+    static bool readConfig(QIODevice& device, QSettings::SettingsMap& map);
+    static bool writeConfig(QIODevice& device, const QSettings::SettingsMap& map);
+    static QJsonObject writeJsonValues(QString path, QJsonObject object, QVariant data);
+    static void readJsonValues(QString path, QJsonObject object, QSettings::SettingsMap& map);
+
+    void writeAnyting(QString group, QString varName, QVariant value);
     void writeString(QString group, QString varName, QString varValue);
     void writeStringList(QString group, QString varName, QStringList varValue);
     void writeInt(QString group, QString varName, int varValue);
@@ -56,18 +65,17 @@ public:
     static QString dataPathString();
 
 private:
-    Config();
+    Config(QObject* parent = nullptr);
     ~Config();
 
-    enum ConfigRecordType {
-        CONFIG_RECORD_SINGLE,
-        CONFIG_RECORD_LIST
-    };
+    enum ConfigRecordType { CONFIG_RECORD_SINGLE, CONFIG_RECORD_LIST };
 
     struct ConfigRecord {
-        ConfigRecord() {}
-        ConfigRecord(QString n, ConfigRecordType t, QString vs, QStringList vl = QStringList()):
-                name(n), type(t), valueSingle(vs), valueList(vl) {}
+        ConfigRecord() {
+        }
+        ConfigRecord(QString n, ConfigRecordType t, QString vs, QStringList vl = QStringList())
+            : name(n), type(t), valueSingle(vs), valueList(vl) {
+        }
         QString name;
         ConfigRecordType type;
         QString valueSingle;
@@ -75,8 +83,10 @@ private:
     };
 
     struct ConfigGroup {
-        ConfigGroup() {}
-        ConfigGroup(QString n): name(n) {}
+        ConfigGroup() {
+        }
+        ConfigGroup(QString n) : name(n) {
+        }
         QString name;
         QMap<QString, ConfigRecord> records;
     };
@@ -88,7 +98,6 @@ private:
     QString m_configFileName;
     QMap<QString, ConfigGroup> m_groups;
     static Config* smp_instance;
-
 };
 
 #endif

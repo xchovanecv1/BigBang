@@ -21,6 +21,7 @@
 #define PUBLICPLAYERVIEW_H
 
 #include <QList>
+#include <QRandomGenerator>
 
 #include "common.h"
 #include "parser/parserstructs.h"
@@ -31,27 +32,28 @@ class PlayingCard;
 /**
  *
  * @author MacJariel <echo "badmailet@gbalt.dob" | tr "edibmlt" "ecrmjil">
-*/
+ */
 class PublicPlayerView {
-friend class Player;
+    friend class Player;
+
 protected:
     PublicPlayerView(Player* player);
     virtual ~PublicPlayerView();
 
 public:
-    int                  id()                const;
-    QString              name()              const;
-    bool                 isCreator()         const;
-    bool                 isSheriff()         const;
-    bool                 isAlive()           const;
-    bool                 isWinner()          const;
-    int                  lifePoints()        const;
-    int                  maxLifePoints()     const;
-    int                  handSize()          const;
-    CharacterType        character()         const;
-    virtual PlayerRole   role()              const;
-    QList<PlayingCard*>  table()             const;
-    PublicPlayerData     publicPlayerData()  const;
+    int id() const;
+    QString name() const;
+    bool isCreator() const;
+    bool isSheriff() const;
+    bool isAlive() const;
+    bool isWinner() const;
+    int lifePoints() const;
+    int maxLifePoints() const;
+    int handSize() const;
+    CharacterType character() const;
+    virtual PlayerRole role() const;
+    QList<PlayingCard*> table() const;
+    PublicPlayerData publicPlayerData() const;
 
     /**
      * Returns a random card of given type from player's table.

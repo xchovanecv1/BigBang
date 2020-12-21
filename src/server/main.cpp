@@ -36,7 +36,10 @@
 int main(int argc, char* argv[]) {
     time_t sec;
     time(&sec);
-    qsrand((unsigned int)sec);
+
+    // https://doc.qt.io/qt-5/qrandomgenerator.html#global
+    // Replaced by QRandomGenerator that is already seeded
+    // qsrand((unsigned int)sec);
     QCoreApplication app(argc, argv);
     GameServer& server = GameServer::instance();
     server.setVersion(QString("%1.%2.%3")

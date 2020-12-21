@@ -18,37 +18,33 @@ c *   (at your option) any later version.                                   *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include <QInputDialog>
 #include <QHeaderView>
+#include <QInputDialog>
 
 #include "joingamedialog.h"
 #include "serverconnection.h"
 
+#include "config.h"
 #include "parser/queryget.h"
 #include "util.h"
-#include "config.h"
 
 using namespace client;
 
-JoinGameDialog::JoinGameDialog(QWidget *parent, ServerConnection* serverConnection):
-        QDialog(parent),
-        mp_serverConnection(serverConnection),
-        m_currentGameId(0),
-        m_currentPlayerId(0)
-{
+JoinGameDialog::JoinGameDialog(QWidget* parent, ServerConnection* serverConnection)
+    : QDialog(parent), mp_serverConnection(serverConnection), m_currentGameId(0), m_currentPlayerId(0) {
     setupUi(this);
-    connect(pushButtonRefresh, SIGNAL(clicked()),
-            this, SLOT(refreshGameList()));
+    connect(pushButtonRefresh, SIGNAL(clicked()), this, SLOT(refreshGameList()));
 
-    connect(lineEditPlayerName, SIGNAL(textChanged(QString)),
-            this, SLOT(setButtonsState()));
-    //playerListView->header()->setResizeMode(0, QHeaderView::Stretch);
+    connect(lineEditPlayerName, SIGNAL(textChanged(QString)), this, SLOT(setButtonsState()));
+    // playerListView->header()->setResizeMode(0, QHeaderView::Stretch);
     playerListView->header()->setStretchLastSection(0);
-    playerListView->setHeaderLabels(QStringList() << tr("Player") << "" << "" << "");
-    playerListView->header()->setResizeMode(0, QHeaderView::Stretch);
-    playerListView->header()->setResizeMode(1, QHeaderView::ResizeToContents);
-    playerListView->header()->setResizeMode(2, QHeaderView::ResizeToContents);
-    playerListView->header()->setResizeMode(3, QHeaderView::ResizeToContents);
+    playerListView->setHeaderLabels(QStringList() << tr("Player") << ""
+                                                  << ""
+                                                  << "");
+    playerListView->header()->setSectionResizeMode(0, QHeaderView::Stretch);
+    playerListView->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+    playerListView->header()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+    playerListView->header()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
     /*
     playerListView->header()->resizeSection(0, 16);
     playerListView->header()->resizeSection(1, 16);
@@ -62,28 +58,27 @@ JoinGameDialog::JoinGameDialog(QWidget *parent, ServerConnection* serverConnecti
     loadConfigValues();
 }
 
-
-JoinGameDialog::~JoinGameDialog()
-{
+JoinGameDialog::~JoinGameDialog() {
 }
 
-QString gameState(GameState g)
-{
-    switch(g) {
-        case GAMESTATE_WAITINGFORPLAYERS: return QObject::tr("waiting");
-        case GAMESTATE_PLAYING: return QObject::tr("playing");
-        case GAMESTATE_FINISHED: return QObject::tr("finished");
-        default: break;
+QString gameState(GameState g) {
+    switch (g) {
+        case GAMESTATE_WAITINGFORPLAYERS:
+            return QObject::tr("waiting");
+        case GAMESTATE_PLAYING:
+            return QObject::tr("playing");
+        case GAMESTATE_FINISHED:
+            return QObject::tr("finished");
+        default:
+            break;
     }
     return "";
 }
 
-
-void setGameItem(const GameInfoData& gameInfo, QTreeWidgetItem* item)
-{
+void setGameItem(const GameInfoData& gameInfo, QTreeWidgetItem* item) {
     item->setData(0, Qt::UserRole, gameInfo.id);
     item->setText(0, gameInfo.name);
-    switch(gameInfo.state) {
+    switch (gameInfo.state) {
         case GAMESTATE_WAITINGFORPLAYERS:
             item->setText(1, "Waiting");
             item->setText(2, QString("%1 / %2").arg(gameInfo.totalPlayersCnt).arg(gameInfo.maxPlayers));
@@ -101,17 +96,14 @@ void setGameItem(const GameInfoData& gameInfo, QTreeWidgetItem* item)
     }
 }
 
-
-
-void JoinGameDialog::updateGameListView()
-{
+void JoinGameDialog::updateGameListView() {
     bool isCurrentGameInList = 0;
     gameListView->clear();
-    foreach(const GameInfoData& gameInfo, m_gameList) {
+    foreach (const GameInfoData& gameInfo, m_gameList) {
         QTreeWidgetItem* item = new QTreeWidgetItem(gameListView);
         item->setData(0, Qt::UserRole, gameInfo.id);
         item->setText(0, gameInfo.name);
-        switch(gameInfo.state) {
+        switch (gameInfo.state) {
             case GAMESTATE_WAITINGFORPLAYERS:
                 item->setText(1, "Waiting");
                 item->setText(2, QString("%1 / %2").arg(gameInfo.totalPlayersCnt).arg(gameInfo.maxPlayers));
@@ -137,10 +129,9 @@ void JoinGameDialog::updateGameListView()
     setButtonsState();
 }
 
-void JoinGameDialog::updateGameView()
-{
+void JoinGameDialog::updateGameView() {
     const GameInfoData* gameInfo = 0;
-    foreach(const GameInfoData& g, m_gameList) {
+    foreach (const GameInfoData& g, m_gameList) {
         if (g.id == m_currentGameId) {
             gameInfo = &g;
             break;
@@ -170,7 +161,7 @@ void JoinGameDialog::updateGameView()
         labelPassword->setText(QObject::tr("no password necessary"));
 
     playerListView->clear();
-    foreach(const PlayerInfoData& p, gameInfo->players) {
+    foreach (const PlayerInfoData& p, gameInfo->players) {
         QTreeWidgetItem* item = new QTreeWidgetItem();
         item->setData(0, Qt::UserRole, p.id);
         if (p.id == m_currentPlayerId)
@@ -207,8 +198,7 @@ void JoinGameDialog::updateGameView()
         }
         playerListView->addTopLevelItem(item);
     }
-    if (gameInfo->state == GAMESTATE_WAITINGFORPLAYERS &&
-            gameInfo->totalPlayersCnt < gameInfo->maxPlayers) {
+    if (gameInfo->state == GAMESTATE_WAITINGFORPLAYERS && gameInfo->totalPlayersCnt < gameInfo->maxPlayers) {
         QTreeWidgetItem* item = new QTreeWidgetItem(playerListView);
         item->setData(0, Qt::UserRole, -1);
         item->setText(0, QObject::tr("Create new player"));
@@ -223,19 +213,16 @@ void JoinGameDialog::updateGameView()
     setButtonsState();
 }
 
-
-void JoinGameDialog::updateGameList(const GameInfoListData& gameList)
-{
+void JoinGameDialog::updateGameList(const GameInfoListData& gameList) {
     m_gameList = gameList;
     updateGameListView();
     updateGameView();
 }
 
-void JoinGameDialog::updateGame(const GameInfoData& game)
-{
+void JoinGameDialog::updateGame(const GameInfoData& game) {
     QMutableListIterator<GameInfoData> it(m_gameList);
     bool gameIsInList = 0;
-    while(it.hasNext()) {
+    while (it.hasNext()) {
         if (it.next().id == game.id) {
             it.setValue(game);
             gameIsInList = 1;
@@ -249,62 +236,49 @@ void JoinGameDialog::updateGame(const GameInfoData& game)
     updateGameView();
 }
 
-
-void JoinGameDialog::refreshGameList()
-{
+void JoinGameDialog::refreshGameList() {
     QueryGet* query = mp_serverConnection->queryGet();
-    connect(query,  SIGNAL(result(const GameInfoListData&)),
-            this,   SLOT(updateGameList(const GameInfoListData&)));
+    connect(query, SIGNAL(result(const GameInfoListData&)), this, SLOT(updateGameList(const GameInfoListData&)));
     query->getGameInfoList();
 }
 
-void JoinGameDialog::refreshGame(int gameId)
-{
+void JoinGameDialog::refreshGame(int gameId) {
     QueryGet* query = mp_serverConnection->queryGet();
-    connect(query, SIGNAL(result(const GameInfoData&)),
-            this, SLOT(updateGame(const GameInfoData&)));
+    connect(query, SIGNAL(result(const GameInfoData&)), this, SLOT(updateGame(const GameInfoData&)));
     query->getGameInfo(gameId);
 }
 
-void JoinGameDialog::selectGame(int gameId)
-{
+void JoinGameDialog::selectGame(int gameId) {
     if (m_currentGameId != gameId)
         m_currentPlayerId = 0;
     m_currentGameId = gameId;
     updateGameView();
-    //refreshGame(gameId);
+    // refreshGame(gameId);
 }
 
-
-void JoinGameDialog::show()
-{
+void JoinGameDialog::show() {
     refreshGameList();
     QDialog::show();
 }
 
-void JoinGameDialog::on_gameListView_itemClicked(QTreeWidgetItem* item, int)
-{
+void JoinGameDialog::on_gameListView_itemClicked(QTreeWidgetItem* item, int) {
     int gameId = item->data(0, Qt::UserRole).toUInt();
     selectGame(gameId);
 }
 
-void JoinGameDialog::on_playerListView_itemClicked(QTreeWidgetItem * item, int)
-{
+void JoinGameDialog::on_playerListView_itemClicked(QTreeWidgetItem* item, int) {
     m_currentPlayerId = item->data(0, Qt::UserRole).toUInt();
     setButtonsState();
 }
 
-void JoinGameDialog::setButtonsState()
-{
+void JoinGameDialog::setButtonsState() {
     bool enableSpectate = (m_currentGameId != 0);
-    bool enablePlay = enableSpectate && (m_currentPlayerId != 0) &&
-                        !lineEditPlayerName->text().isEmpty();
+    bool enablePlay     = enableSpectate && (m_currentPlayerId != 0) && !lineEditPlayerName->text().isEmpty();
     pushButtonSpectate->setEnabled(enableSpectate);
     pushButtonPlay->setEnabled(enablePlay);
 }
 
-void JoinGameDialog::on_pushButtonPlay_clicked()
-{
+void JoinGameDialog::on_pushButtonPlay_clicked() {
     Q_ASSERT(m_currentGameId != 0);
     Q_ASSERT(m_currentPlayerId != 0);
 
@@ -314,11 +288,14 @@ void JoinGameDialog::on_pushButtonPlay_clicked()
     QString password;
     if (game->hasPlayerPassword) {
         bool ok;
-        password = QInputDialog::getText(this, tr("Enter password"),
-                                          tr("The game is protected by password. Please enter the password:"),
-                                          QLineEdit::Password, "", &ok);
-         if (!ok || password.isEmpty())
-             return;
+        password = QInputDialog::getText(this,
+                                         tr("Enter password"),
+                                         tr("The game is protected by password. Please enter the password:"),
+                                         QLineEdit::Password,
+                                         "",
+                                         &ok);
+        if (!ok || password.isEmpty())
+            return;
     }
 
     if (m_currentPlayerId == -1)
@@ -335,8 +312,7 @@ void JoinGameDialog::on_pushButtonPlay_clicked()
 }
 
 // TODO: SPECTATE
-void JoinGameDialog::on_pushButtonSpectate_clicked()
-{
+void JoinGameDialog::on_pushButtonSpectate_clicked() {
     /*
     Q_ASSERT(mp_gameListView->currentItem() != 0);
     int gameId = mp_gameListView->currentItem()->data(0, Qt::UserRole).toUInt();
@@ -346,17 +322,15 @@ void JoinGameDialog::on_pushButtonSpectate_clicked()
     */
 }
 
-const GameInfoData* JoinGameDialog::gameInfoData(int gameId)
-{
-    foreach(const GameInfoData& gameInfo, m_gameList) {
+const GameInfoData* JoinGameDialog::gameInfoData(int gameId) {
+    foreach (const GameInfoData& gameInfo, m_gameList) {
         if (gameInfo.id == gameId)
             return &gameInfo;
     }
     return 0;
 }
 
-void JoinGameDialog::loadConfigValues()
-{
+void JoinGameDialog::loadConfigValues() {
     Config& cfg = Config::instance();
     cfg.refresh();
     lineEditPlayerName->setText(cfg.readString("player", "name"));
@@ -365,13 +339,10 @@ void JoinGameDialog::loadConfigValues()
     setButtonsState();
 }
 
-void JoinGameDialog::saveConfigValues()
-{
+void JoinGameDialog::saveConfigValues() {
     Config& cfg = Config::instance();
     cfg.writeString("player", "name", lineEditPlayerName->text());
     cfg.writeString("player", "password", lineEditPlayerPassword->text());
     cfg.writeString("player", "image", selectPlayerIconWidget->imageFileName());
     cfg.store();
 }
-
-

@@ -6,9 +6,13 @@ OBJECTS_DIR = obj/client
 CONFIG += qt
 #CONFIG += release \
 #    warn_on
-QT += network xml multimedia gui
+QT += network xml gui
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 greaterThan(QT_MAJOR_VERSION, 4): DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x000000
+
+lessThan(QT_MAJOR_VERSION, 6): QT += multimedia
+lessThan(QT_MAJOR_VERSION, 6): DEFINES += MULTIMEDIA_MODULE_PRESENT=1
+
 RESOURCES += src/client/resources/client.qrc
 INCLUDEPATH += src/client \
     src/common
@@ -111,11 +115,11 @@ CONFIG(debug, debug|release) {
     DESTDIR = $$OUT_PWD/release
 }
 
-unix { 
+unix {
     LIBPATH += lib
     TARGETDEPS += lib/libkbang_common.a
 }
-win32 { 
+win32 {
     RC_FILE = kbang_client.rc
     debug:LIBPATH += debug/lib
     release:LIBPATH += release/lib

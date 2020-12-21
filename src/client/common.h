@@ -21,30 +21,28 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#include <QtDebug>
-#include <QList>
 #include <QLabel>
+#include <QList>
+#include <QRandomGenerator>
+#include <QtDebug>
 
 class QGridLayout;
 
-namespace client
-{
-class LocalPlayerWidget;
-class OpponentWidget;
+namespace client {
+    class LocalPlayerWidget;
+    class OpponentWidget;
 
-struct GameWidgets
-{
-    QWidget* mainWidget;
-    QWidget* middleWidget;
-    LocalPlayerWidget* localPlayerWidget;
-    QList<OpponentWidget*> opponentWidget;
-    QLabel*  statusLabel;
-    GameWidgets(QWidget* main, QWidget* middle, LocalPlayerWidget* p,
-                const QList<OpponentWidget*>& o, QLabel* s):
-        mainWidget(main), middleWidget(middle), localPlayerWidget(p), opponentWidget(o),
-        statusLabel(s){}
-};
+    struct GameWidgets {
+        QWidget* mainWidget;
+        QWidget* middleWidget;
+        LocalPlayerWidget* localPlayerWidget;
+        QList<OpponentWidget*> opponentWidget;
+        QLabel* statusLabel;
+        GameWidgets(QWidget* main, QWidget* middle, LocalPlayerWidget* p, const QList<OpponentWidget*>& o, QLabel* s)
+            : mainWidget(main), middleWidget(middle), localPlayerWidget(p), opponentWidget(o), statusLabel(s) {
+        }
+    };
 
-}
+} // namespace client
 
 #endif

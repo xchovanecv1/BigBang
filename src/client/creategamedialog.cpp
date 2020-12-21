@@ -18,8 +18,6 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include <QRegExpValidator>
-#include <QRegExp>
 #include "creategamedialog.h"
 #include "config.h"
 
@@ -27,9 +25,7 @@ using namespace client;
 
 const int minPlayers = 4, maxPlayers = 7;
 
-CreateGameDialog::CreateGameDialog(QWidget *parent)
- : QDialog(parent), Ui::CreateGameDialog()
-{
+CreateGameDialog::CreateGameDialog(QWidget* parent) : QDialog(parent), Ui::CreateGameDialog() {
     setupUi(this);
 
     pushButtonCreate->setEnabled(0);
@@ -47,52 +43,42 @@ CreateGameDialog::CreateGameDialog(QWidget *parent)
         spinBoxMaxSpectators->setValue(-1);
     }
 
-    connect(spinBoxMinPlayers, SIGNAL(valueChanged(int)),
-            this, SLOT(playerCountsChanged()));
-    connect(spinBoxMaxPlayers, SIGNAL(valueChanged(int)),
-            this, SLOT(playerCountsChanged()));
+    connect(spinBoxMinPlayers, SIGNAL(valueChanged(int)), this, SLOT(playerCountsChanged()));
+    connect(spinBoxMaxPlayers, SIGNAL(valueChanged(int)), this, SLOT(playerCountsChanged()));
 
-    connect(lineEditGameName,   SIGNAL(textChanged(const QString&)),
-            this, SLOT(validateInput()));
-    connect(lineEditPlayerName, SIGNAL(textChanged(const QString&)),
-            this, SLOT(validateInput()));
+    connect(lineEditGameName, SIGNAL(textChanged(const QString&)), this, SLOT(validateInput()));
+    connect(lineEditPlayerName, SIGNAL(textChanged(const QString&)), this, SLOT(validateInput()));
 }
 
-
-CreateGameDialog::~CreateGameDialog()
-{
+CreateGameDialog::~CreateGameDialog() {
 }
 
-void CreateGameDialog::playerCountsChanged()
-{
+void CreateGameDialog::playerCountsChanged() {
     spinBoxMinPlayers->setMaximum(spinBoxMaxPlayers->value());
     spinBoxMaxPlayers->setMinimum(spinBoxMinPlayers->value());
     spinBoxAIPlayers->setMaximum(spinBoxMaxPlayers->value() - 1);
 }
 
-void CreateGameDialog::validateInput()
-{
-    pushButtonCreate->setEnabled(!lineEditGameName->text().isEmpty() &&
-                                 !lineEditPlayerName->text().isEmpty());
+void CreateGameDialog::validateInput() {
+    pushButtonCreate->setEnabled(!lineEditGameName->text().isEmpty() && !lineEditPlayerName->text().isEmpty());
 }
 
-void CreateGameDialog::on_pushButtonCreate_clicked()
-{
+void CreateGameDialog::on_pushButtonCreate_clicked() {
     CreateGameData createGameData;
-    createGameData.name                 = lineEditGameName->text();
-    createGameData.description          = lineEditGameDescription->text();
-    createGameData.minPlayers           = spinBoxMinPlayers->value();
-    createGameData.maxPlayers           = spinBoxMaxPlayers->value();
-    createGameData.maxSpectators        = spinBoxMaxSpectators->value();
-    createGameData.AIPlayers            = spinBoxAIPlayers->value();
-    createGameData.playerPassword       = lineEditGamePasswordPlayers->text();
-    createGameData.spectatorPassword    = lineEditGamePasswordSpectators->text();
-    createGameData.flagShufflePlayers   = radioButtonOrderRandom->isChecked();
+    createGameData.name               = lineEditGameName->text();
+    createGameData.description        = lineEditGameDescription->text();
+    createGameData.minPlayers         = spinBoxMinPlayers->value();
+    createGameData.maxPlayers         = spinBoxMaxPlayers->value();
+    createGameData.maxSpectators      = spinBoxMaxSpectators->value();
+    createGameData.AIPlayers          = spinBoxAIPlayers->value();
+    createGameData.playerPassword     = lineEditGamePasswordPlayers->text();
+    createGameData.spectatorPassword  = lineEditGamePasswordSpectators->text();
+    createGameData.flagShufflePlayers = radioButtonOrderRandom->isChecked();
 
     CreatePlayerData createPlayerData;
-    createPlayerData.name               = lineEditPlayerName->text();
-    createPlayerData.password           = lineEditPlayerPassword->text();
-    createPlayerData.avatar             = selectPlayerIconWidget->image();
+    createPlayerData.name     = lineEditPlayerName->text();
+    createPlayerData.password = lineEditPlayerPassword->text();
+    createPlayerData.avatar   = selectPlayerIconWidget->image();
 
     saveConfigValues(createGameData);
 
@@ -100,9 +86,7 @@ void CreateGameDialog::on_pushButtonCreate_clicked()
     close();
 }
 
-
-void CreateGameDialog::loadConfigValues()
-{
+void CreateGameDialog::loadConfigValues() {
     Config& cfg = Config::instance();
     cfg.refresh();
     QString grp("create-game-dialog");
@@ -123,8 +107,7 @@ void CreateGameDialog::loadConfigValues()
     validateInput();
 }
 
-void CreateGameDialog::saveConfigValues(const CreateGameData& game)
-{
+void CreateGameDialog::saveConfigValues(const CreateGameData& game) {
     Config& cfg = Config::instance();
     QString grp("create-game-dialog");
     cfg.writeString(grp, "name", game.name);
@@ -141,4 +124,3 @@ void CreateGameDialog::saveConfigValues(const CreateGameData& game)
 
     cfg.store();
 }
-

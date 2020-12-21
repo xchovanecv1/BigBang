@@ -21,17 +21,17 @@
 #define QUERYGET_H
 
 #include "parserstructs.h"
+#include <QElapsedTimer>
 #include <QObject>
-#include <QTime>
 
 class Parser;
 class QXmlStreamWriter;
 class XmlNode;
 
-class QueryGet: public QObject
-{
-Q_OBJECT
-friend class Parser;
+class QueryGet : public QObject {
+    Q_OBJECT
+    friend class Parser;
+
 public:
     void getServerInfo();
     void getGameInfo(int id);
@@ -52,10 +52,10 @@ private:
     void parseResult(XmlNode*);
 
 private:
-    Parser*             mp_parser;
-    QXmlStreamWriter*   mp_streamWriter;
-    QString             m_id;
-    QTime               m_pingTime;
+    Parser* mp_parser;
+    QXmlStreamWriter* mp_streamWriter;
+    QString m_id;
+    QElapsedTimer m_pingTime;
 };
 
 #endif

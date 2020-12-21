@@ -1,21 +1,18 @@
 #include "carddynamite.h"
+#include "game.h"
 #include "gamecycle.h"
 #include "gameexceptions.h"
 #include "gametable.h"
-#include "game.h"
 #include "player.h"
 
-CardDynamite::CardDynamite(Game *game, int id, CardSuit suit, CardRank rank):
-        TableCard(game, id, CARD_DYNAMITE, suit, rank)
-{
+CardDynamite::CardDynamite(Game* game, int id, CardSuit suit, CardRank rank)
+    : TableCard(game, id, CARD_DYNAMITE, suit, rank) {
 }
 
-CardDynamite::~CardDynamite()
-{
+CardDynamite::~CardDynamite() {
 }
 
-void CardDynamite::play()
-{
+void CardDynamite::play() {
     if (gameCycle()->isDraw()) {
         assertOnTable();
         owner()->predrawCheck(PredrawCheck);
@@ -31,8 +28,7 @@ void CardDynamite::play()
     }
 }
 
-void CardDynamite::checkResult(bool result)
-{
+void CardDynamite::checkResult(bool result) {
     if (result) { // luck
         gameTable()->passTableCard(this, game()->nextPlayer(owner()));
     } else {
@@ -42,19 +38,14 @@ void CardDynamite::checkResult(bool result)
     }
 }
 
-
-void CardDynamite::registerPlayer(Player* player)
-{
-   player->registerPredrawCheck(PredrawCheck);
+void CardDynamite::registerPlayer(Player* player) {
+    player->registerPredrawCheck(PredrawCheck);
 }
 
-void CardDynamite::unregisterPlayer(Player* player)
-{
-   player->unregisterPredrawCheck(PredrawCheck);
+void CardDynamite::unregisterPlayer(Player* player) {
+    player->unregisterPredrawCheck(PredrawCheck);
 }
 
-
-bool CardDynamite::checkDynamite(PlayingCard* card)
-{
-    return  (card->suit() != SUIT_SPADES || card->rank() > 9);
+bool CardDynamite::checkDynamite(PlayingCard* card) {
+    return (card->suit() != SUIT_SPADES || card->rank() > 9);
 }

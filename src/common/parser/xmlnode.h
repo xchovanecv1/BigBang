@@ -20,10 +20,10 @@
 #ifndef XMLNODE_H
 #define XMLNODE_H
 
+#include <QMap>
 #include <QObject>
 #include <QPair>
 #include <QString>
-#include <QMap>
 #include <QXmlStreamAttributes>
 
 class QStringRef;
@@ -31,35 +31,33 @@ class QStringRef;
 /**
  * @author MacJariel <echo "badmailet@gbalt.dob" | tr "edibmlt" "ecrmjil">
  */
-class XmlNode : public QObject
-{
-Q_OBJECT
+class XmlNode : public QObject {
+    Q_OBJECT
 public:
-    XmlNode(XmlNode *parent, const QString& elementName, bool textElement = 0);
+    XmlNode(XmlNode* parent, const QString& elementName, bool textElement = 0);
     XmlNode* createChildNode(const QString& elementName);
-    XmlNode* createChildNode(const QStringRef& elementName, const QXmlStreamAttributes& attributes);
-    XmlNode* createChildTextNode(const QStringRef& text);
-    void     createAttribute(const QString& name, const QString& value);
-    void     createAttributes(const QXmlStreamAttributes& attributes);
-    
-    void     debugPrint(int indent = 0) const;
-    
+    XmlNode* createChildNode(const QStringView& elementName, const QXmlStreamAttributes& attributes);
+    XmlNode* createChildTextNode(const QStringView& text);
+    void createAttribute(const QString& name, const QString& value);
+    void createAttributes(const QXmlStreamAttributes& attributes);
+
+    void debugPrint(int indent = 0) const;
+
     QString name() const;
     QString attribute(const QString& name) const;
     QString text() const;
     bool isTextElement() const;
     XmlNode* getFirstChild() const;
     QList<XmlNode*> getChildren() const;
-    
-    
+
     virtual XmlNode* parentNode();
     virtual ~XmlNode();
 
 private:
-    const QString           m_elementName;
-    bool                    m_isTextElement;
-    QMap<QString, QString>  m_attributes;
-    QList<XmlNode*>         m_children;
+    const QString m_elementName;
+    bool m_isTextElement;
+    QMap<QString, QString> m_attributes;
+    QList<XmlNode*> m_children;
 };
 
 #endif

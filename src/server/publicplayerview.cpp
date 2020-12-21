@@ -20,65 +20,53 @@
 
 #include <QImage>
 
-#include "publicplayerview.h"
 #include "player.h"
 #include "playingcard.h"
+#include "publicplayerview.h"
 
-PublicPlayerView::PublicPlayerView(Player* player): mp_player(player)
-{
+PublicPlayerView::PublicPlayerView(Player* player) : mp_player(player) {
 }
 
-PublicPlayerView::~ PublicPlayerView()
-{
+PublicPlayerView::~PublicPlayerView() {
 }
 
-int PublicPlayerView::id() const
-{
+int PublicPlayerView::id() const {
     return this ? mp_player->id() : 0;
 }
 
-QString PublicPlayerView::name() const
-{
+QString PublicPlayerView::name() const {
     return mp_player->name();
 }
 
-bool PublicPlayerView::isCreator() const
-{
+bool PublicPlayerView::isCreator() const {
     return mp_player->isCreator();
 }
 
-bool PublicPlayerView::isSheriff() const
-{
+bool PublicPlayerView::isSheriff() const {
     return (mp_player->role() == ROLE_SHERIFF);
 }
 
-bool PublicPlayerView::isAlive() const
-{
+bool PublicPlayerView::isAlive() const {
     return mp_player->isAlive();
 }
 
-bool PublicPlayerView::isWinner() const
-{
+bool PublicPlayerView::isWinner() const {
     return mp_player->isWinner();
 }
 
-int PublicPlayerView::lifePoints() const
-{
+int PublicPlayerView::lifePoints() const {
     return mp_player->lifePoints();
 }
 
-int PublicPlayerView::maxLifePoints() const
-{
+int PublicPlayerView::maxLifePoints() const {
     return mp_player->maxLifePoints();
 }
 
-int PublicPlayerView::handSize() const
-{
+int PublicPlayerView::handSize() const {
     return mp_player->handSize();
 }
 
-CharacterType PublicPlayerView::character() const
-{
+CharacterType PublicPlayerView::character() const {
     return mp_player->characterType();
 }
 
@@ -87,48 +75,42 @@ CharacterType PublicPlayerView::character() const
  * the player is still alive and is not sheriff,
  * the unknown role is returned.
  */
-PlayerRole PublicPlayerView::role() const
-{
+PlayerRole PublicPlayerView::role() const {
     if (mp_player->isPublicRole())
         return mp_player->role();
     return ROLE_UNKNOWN;
 }
 
-QList<PlayingCard*> PublicPlayerView::table() const
-{
+QList<PlayingCard*> PublicPlayerView::table() const {
     return mp_player->table();
 }
 
-PublicPlayerData PublicPlayerView::publicPlayerData() const
-{
+PublicPlayerData PublicPlayerView::publicPlayerData() const {
     PublicPlayerData res;
-    res.id          = mp_player->id();
-    res.name        = mp_player->name();
-    res.character   = mp_player->characterType();
-    res.lifePoints  = lifePoints();
-    res.isSheriff   = isSheriff();
-    res.handSize    = handSize();
-    res.avatar      = mp_player->avatar();
-    foreach (PlayingCard* card, table()) {
-        res.table.append(card->cardData());
-    }
-    res.hasPassword = !mp_player->password().isEmpty();
+    res.id         = mp_player->id();
+    res.name       = mp_player->name();
+    res.character  = mp_player->characterType();
+    res.lifePoints = lifePoints();
+    res.isSheriff  = isSheriff();
+    res.handSize   = handSize();
+    res.avatar     = mp_player->avatar();
+    foreach (PlayingCard* card, table()) { res.table.append(card->cardData()); }
+    res.hasPassword   = !mp_player->password().isEmpty();
     res.hasController = mp_player->gameEventListener() != 0;
-    res.isAI = mp_player->isAI();
-    res.isAlive = mp_player->isAlive();
-    res.isWinner = mp_player->isWinner();
-    res.role = role();
+    res.isAI          = mp_player->isAI();
+    res.isAlive       = mp_player->isAlive();
+    res.isWinner      = mp_player->isWinner();
+    res.role          = role();
     return res;
 }
 
-PlayingCard* PublicPlayerView::cardFromTable(PlayingCardType cardType) const
-{
+PlayingCard* PublicPlayerView::cardFromTable(PlayingCardType cardType) const {
     if (table().size() == 0) {
         return 0;
     }
 
     if (cardType == CARD_UNKNOWN) {
-        return table()[qrand() % table().size()];
+        return table()[std::abs((int)QRandomGenerator::global()->generate()) % table().size()];
     }
 
     foreach (PlayingCard* card, table()) {

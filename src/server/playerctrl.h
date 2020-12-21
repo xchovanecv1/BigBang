@@ -5,6 +5,7 @@
 
 #include "gameexceptions.h"
 #include "parser/parserstructs.h"
+#include "playingcard.h"
 
 class Player;
 class GameEventListener;
@@ -20,8 +21,7 @@ class PlayingCard;
  * this API. It's used primarily by AIs and the
  * adaptor between this class and xml parser.
  */
-class PlayerCtrl :  QObject
-{
+class PlayerCtrl : QObject {
     Q_OBJECT;
     friend class Player;
 public slots:
@@ -42,7 +42,6 @@ public slots:
      *         players in the game.
      */
     void startGame();
-
 
     /**
      * Player draws two cards in his draw phase.
@@ -67,7 +66,6 @@ public slots:
      */
     void discardCard(PlayingCard* card);
 
-
     void useAbility();
     void useAbility(const PublicPlayerView* targetPlayer);
     void useAbility(QList<PlayingCard*> cards);
@@ -80,18 +78,14 @@ public slots:
     void playCard(PlayingCard* card, PlayingCard* targetCard);
     void pass();
 
-
     void sendChatMessage(const QString&);
 
 public:
     PlayingCard* card(int cardId) const;
 
-
     const PublicGameView& publicGameView() const;
     const PublicPlayerView& publicPlayerView(int playerId = 0) const;
     const PrivatePlayerView& privatePlayerView() const;
-
-
 
     /**
      * Creates a new game and automatically puts the player in. This should be used
@@ -115,8 +109,8 @@ public:
      */
     static void joinGame(int gameId, const QString& gamePassword, const CreatePlayerData&, GameEventListener*);
 
-    static void replacePlayer(int gameId, int playerId, const QString& password, const CreatePlayerData&, GameEventListener*);
-
+    static void replacePlayer(
+        int gameId, int playerId, const QString& password, const CreatePlayerData&, GameEventListener*);
 
     /**
      * Returns the StructServerInfo struct.
@@ -133,14 +127,15 @@ public:
      */
     static const PublicGameView& publicGameView(int gameId);
 
-
 private:
     PlayerCtrl(Player* player);
-    PlayerCtrl(const PlayerCtrl&): QObject(0) {}
-    PlayerCtrl& operator=(const PlayerCtrl&) { return *this; }
+    PlayerCtrl(const PlayerCtrl&) : QObject(0) {
+    }
+    PlayerCtrl& operator=(const PlayerCtrl&) {
+        return *this;
+    }
 
-    Player*                     mp_player;
-
+    Player* mp_player;
 };
 
 #endif // PLAYERCTRL_H

@@ -19,15 +19,12 @@
  ***************************************************************************/
 #include "chatwidget.h"
 
-#include <QPainter>
 #include <QPaintEvent>
-
+#include <QPainter>
 
 using namespace client;
 
-ChatWidget::ChatWidget(QWidget *parent)
- : QWidget(parent)
-{
+ChatWidget::ChatWidget(QWidget* parent) : QWidget(parent) {
     setupUi(this);
     setContentsMargins(5, 5, 5, 5);
     /*
@@ -38,36 +35,27 @@ ChatWidget::ChatWidget(QWidget *parent)
 
     mp_chatView->setFocusPolicy(Qt::NoFocus);
     mp_messageBox->setFocusPolicy(Qt::ClickFocus);
-    connect(mp_messageBox, SIGNAL(returnPressed()),
-            this, SLOT(sendMessage()));
+    connect(mp_messageBox, SIGNAL(returnPressed()), this, SLOT(sendMessage()));
 }
 
-
-ChatWidget::~ChatWidget()
-{
+ChatWidget::~ChatWidget() {
 }
 
-void ChatWidget::paintEvent(QPaintEvent* event)
-{
+void ChatWidget::paintEvent(QPaintEvent* event) {
     QPainter painter(this);
-    painter.fillRect(event->rect().intersect(contentsRect()), QColor(0, 0, 0, 32));
+    painter.fillRect(event->rect().intersected(contentsRect()), QColor(0, 0, 0, 32));
 }
 
-void ChatWidget::clear()
-{
+void ChatWidget::clear() {
     mp_chatView->clear();
 }
 
-void ChatWidget::incomingMessage(int, const QString& senderName, const QString& message)
-{
-    mp_chatView->append(QString("<b>%1:</b> %2").arg(Qt::escape(senderName)).arg(Qt::escape(message)));
+void ChatWidget::incomingMessage(int, const QString& senderName, const QString& message) {
+    mp_chatView->append(QString("<b>%1:</b> %2").arg(senderName.toHtmlEscaped()).arg(message.toHtmlEscaped()));
 }
 
-void ChatWidget::sendMessage()
-{
+void ChatWidget::sendMessage() {
     const QString& message = mp_messageBox->text();
     mp_messageBox->clear();
     emit outgoingMessage(message);
 }
-
-

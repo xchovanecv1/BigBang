@@ -18,15 +18,15 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include "config.h"
+#include "mainwindow.h"
 #include <QApplication>
 #include <QDialog>
 #include <cstdlib>
 #include <time.h>
-#include "mainwindow.h"
-#include "config.h"
 
 #ifdef Q_OS_UNIX
-#include <signal.h>
+#    include <signal.h>
 #endif
 
 #define KBANG_CLIENT_VERSION_MAJOR 0
@@ -35,11 +35,12 @@
 
 using namespace client;
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char* argv[]) {
     time_t sec;
     time(&sec);
-    qsrand((unsigned int) sec);
+
+    // QRandomGenerator::global() already uses secure seed generation
+    // qsrand((unsigned int) sec);
 
 #ifdef Q_OS_UNIX
     // ignore broken-pipe signal eventually caused by sockets
@@ -48,11 +49,11 @@ int main(int argc, char *argv[])
 
     QApplication app(argc, argv);
     app.setApplicationName("KBang Client");
-    app.setApplicationVersion(QString("%1.%2.%3").arg(KBANG_CLIENT_VERSION_MAJOR).
-                                                  arg(KBANG_CLIENT_VERSION_MINOR).
-                                                  arg(KBANG_CLIENT_VERSION_REVISION));
+    app.setApplicationVersion(QString("%1.%2.%3")
+                                  .arg(KBANG_CLIENT_VERSION_MAJOR)
+                                  .arg(KBANG_CLIENT_VERSION_MINOR)
+                                  .arg(KBANG_CLIENT_VERSION_REVISION));
     MainWindow mainWindow;
     mainWindow.show();
     return app.exec();
 }
-

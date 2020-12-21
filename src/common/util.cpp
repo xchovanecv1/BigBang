@@ -19,29 +19,27 @@
  ***************************************************************************/
 
 #include "util.h"
+#include <QList>
+#include <QRandomGenerator>
 #include <cstdlib>
 #include <time.h>
-#include <QList>
 
-QString randomToken(int minLength, int maxLength)
-{
+QString randomToken(int minLength, int maxLength) {
     Q_ASSERT(minLength <= maxLength);
     const static char* chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
-    const static int charl = strlen(chars);
-    int length = minLength + ((int)qrand() % (maxLength - minLength + 1));
-    char token[length+1];
-    for (int i = 0; i < length; ++i)
-    {
-        token[i] = chars[qrand() % charl];
+    const static int charl   = strlen(chars);
+    int length = minLength + (std::abs((int)QRandomGenerator::global()->generate()) % (maxLength - minLength + 1));
+    char token[length + 1];
+    for (int i = 0; i < length; ++i) {
+        token[i] = chars[std::abs((int)QRandomGenerator::global()->generate()) % charl];
     }
     token[length - 1] = '\0';
     return QString(token);
 }
 
-bool randomBool(qreal probability)
-{
-    int random_val_size = 4096;
+bool randomBool(qreal probability) {
+    int random_val_size   = 4096;
     int true_val_treshold = (int)(random_val_size * probability);
-    int random_val = qrand() % random_val_size;
+    int random_val        = std::abs((int)QRandomGenerator::global()->generate()) % random_val_size;
     return (random_val < true_val_treshold);
 }

@@ -24,30 +24,22 @@
 
 #include <cstdlib>
 
-#include <QSize>
-#include <QPainter>
 #include <QPaintEvent>
-
+#include <QPainter>
+#include <QSize>
 
 using namespace client;
 
-CardListWidget::CardListWidget(QWidget *parent):
-        CardPocket(parent),
-        m_cardSize(CardWidget::SIZE_SMALL),
-        m_hasBox(1),
-        m_hPadding(3),
-        m_vPadding(3)
-{
-    //setStyleSheet("client--CardListWidget { padding: 4px; background-color: rgba(0, 0, 0, 64); }");
+CardListWidget::CardListWidget(QWidget* parent)
+    : CardPocket(parent), m_cardSize(CardWidget::SIZE_SMALL), m_hasBox(1), m_hPadding(3), m_vPadding(3) {
+    // setStyleSheet("client--CardListWidget { padding: 4px; background-color: rgba(0, 0, 0, 64); }");
 }
 
-CardListWidget::~CardListWidget()
-{
+CardListWidget::~CardListWidget() {
 }
 
-void CardListWidget::setCardSize(const CardWidget::Size& cardSize)
-{
-    m_cardSize = cardSize;
+void CardListWidget::setCardSize(const CardWidget::Size& cardSize) {
+    m_cardSize  = cardSize;
     QSize cardS = CardWidget::qSize(cardSize);
     QSize widgetSize(cardS.width() * 3 + 2 * m_hPadding, cardS.height() + 2 * m_vPadding);
     m_moveFactor = cardS.width() / 2 + cardS.width() / 5;
@@ -56,8 +48,7 @@ void CardListWidget::setCardSize(const CardWidget::Size& cardSize)
     updateGeometry();
 }
 
-void CardListWidget::push(CardWidget* card)
-{
+void CardListWidget::push(CardWidget* card) {
     CardPocket::push(card);
     card->move(newCardPosition());
     card->setParent(this);
@@ -69,15 +60,12 @@ void CardListWidget::push(CardWidget* card)
     card->show();
 }
 
-QPoint CardListWidget::newCardPosition() const
-{
-    //return QPoint(m_hPadding + m_cards.size() * m_moveFactor, m_vPadding);
+QPoint CardListWidget::newCardPosition() const {
+    // return QPoint(m_hPadding + m_cards.size() * m_moveFactor, m_vPadding);
     return QPoint(cardX(m_cards.size(), 1), m_vPadding);
 }
 
-
-CardWidget* CardListWidget::take(int cardId)
-{
+CardWidget* CardListWidget::take(int cardId) {
     if (m_cards.size() == 0) {
         qCritical("Trying to take from empty card list.");
         return 0;
@@ -92,48 +80,42 @@ CardWidget* CardListWidget::take(int cardId)
         }
         qCritical("Cannot find card id %d in CardListWidget. Taking random card.", cardId);
     }
-    int cardIndex = (int)qrand() % (int)m_cards.size();
-    CardWidget* res = m_cards.takeAt(cardIndex);
+    int cardIndex   = (int)QRandomGenerator::global()->generate() % m_cards.size();
+    CardWidget* res = m_cards.takeAt(std::abs(cardIndex));
     reorder();
     return res;
 }
 
-CardWidget* CardListWidget::pop()
-{
+CardWidget* CardListWidget::pop() {
     CardWidget* res = m_cards.takeLast();
     reorder();
     return res;
 }
 
-void CardListWidget::showEvent(QShowEvent* event)
-{
+void CardListWidget::showEvent(QShowEvent* event) {
     QWidget::showEvent(event);
     reorder();
 }
 
-void CardListWidget::paintEvent(QPaintEvent* event)
-{
+void CardListWidget::paintEvent(QPaintEvent* event) {
     if (m_hasBox) {
         QPainter painter(this);
         painter.fillRect(event->rect(), QColor(0, 0, 0, 16));
     }
 }
 
-void CardListWidget::setHasBox(bool hasBox)
-{
+void CardListWidget::setHasBox(bool hasBox) {
     m_hasBox = hasBox;
 }
 
-void CardListWidget::clear()
-{
-    foreach(CardWidget* card, m_cards)
+void CardListWidget::clear() {
+    foreach (CardWidget* card, m_cards)
         card->deleteLater();
     m_cards.clear();
 }
 
-void CardListWidget::reorder()
-{
-    for(int i = 0; i < m_cards.size(); ++i) {
+void CardListWidget::reorder() {
+    for (int i = 0; i < m_cards.size(); ++i) {
         m_cards[i]->move(cardX(i), m_vPadding);
     }
 }
@@ -153,8 +135,7 @@ int CardListWidget::cardX(int i, bool newCard) const
 }
 */
 
-int CardListWidget::cardX(int i, bool newCard) const
-{
+int CardListWidget::cardX(int i, bool newCard) const {
     int cardCount = m_cards.size();
     if (newCard)
         cardCount++;
@@ -162,10 +143,9 @@ int CardListWidget::cardX(int i, bool newCard) const
     if (cSize <= width() - 2 * m_hPadding) {
         return m_hPadding + i * m_moveFactor + (int)((width() - 2 * m_hPadding) / 2 - (cSize / 2));
     } else {
-        int newMoveFactor = (int)((width() - 2 * m_hPadding - CardWidget::qSize(m_cardSize).width())) / (int)(cardCount - 1);
-        //i * NF = todoWidth - 2*hpadding - width
+        int newMoveFactor =
+            (int)((width() - 2 * m_hPadding - CardWidget::qSize(m_cardSize).width())) / (int)(cardCount - 1);
+        // i * NF = todoWidth - 2*hpadding - width
         return m_hPadding + i * newMoveFactor;
     }
 }
-
-

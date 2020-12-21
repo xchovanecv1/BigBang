@@ -18,74 +18,64 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 #include "game.h"
-#include "serverconnection.h"
-#include "parser/queryget.h"
+#include "cardlistwidget.h"
+#include "cardwidgetsizemanager.h"
+#include "deckwidget.h"
+#include "gameeventhandler.h"
+#include "graveyardwidget.h"
 #include "localplayerwidget.h"
 #include "opponentwidget.h"
-#include "cardlistwidget.h"
-#include "gameeventhandler.h"
-#include "deckwidget.h"
-#include "graveyardwidget.h"
-#include "cardwidgetsizemanager.h"
+#include "parser/queryget.h"
+#include "serverconnection.h"
 
-#include <QtDebug>
 #include <QBoxLayout>
-#include <QSound>
+#include <QtDebug>
 
+// clang-format off
+
+#ifdef MULTIMEDIA_MODULE_PRESENT
+#include <QSound>
+#endif
+
+// clang-format on
 using namespace client;
 
-Game::Game(QObject* parent, int gameId, ClientType clientType,
-           ServerConnection* serverConnection, const GameWidgets& gameWidgets):
-        QObject(parent),
-        m_gameId(gameId),
-        m_playerId(0),
-        m_isCreator(0),
-        m_gameState(GAMESTATE_INVALID),
-        m_interface(NoInterface),
-        mp_serverConnection(serverConnection),
-        mp_localPlayerWidget(gameWidgets.localPlayerWidget),
-        m_opponentWidgets(gameWidgets.opponentWidget),
-        mp_mainWidget(gameWidgets.mainWidget),
-        mp_middleWidget(gameWidgets.middleWidget),
-        mp_statusLabel(gameWidgets.statusLabel),
-        mp_startButton(0),
-        mp_deck(0),
-        mp_graveyard(0),
-        mp_selection(0),
-        m_cardWidgetFactory(this),
-        m_gameActionManager(this)
+Game::Game(QObject* parent,
+           int gameId,
+           ClientType clientType,
+           ServerConnection* serverConnection,
+           const GameWidgets& gameWidgets)
+    : QObject(parent), m_gameId(gameId), m_playerId(0), m_isCreator(0), m_gameState(GAMESTATE_INVALID),
+      m_interface(NoInterface), mp_serverConnection(serverConnection),
+      mp_localPlayerWidget(gameWidgets.localPlayerWidget), m_opponentWidgets(gameWidgets.opponentWidget),
+      mp_mainWidget(gameWidgets.mainWidget), mp_middleWidget(gameWidgets.middleWidget),
+      mp_statusLabel(gameWidgets.statusLabel), mp_startButton(0), mp_deck(0), mp_graveyard(0), mp_selection(0),
+      m_cardWidgetFactory(this), m_gameActionManager(this)
 
 {
     Q_UNUSED(clientType);
     mp_localPlayerWidget->enterGameMode(this);
-    foreach(OpponentWidget* opponentWidget, m_opponentWidgets) {
-        opponentWidget->enterGameMode(this);
-    }
+    foreach (OpponentWidget* opponentWidget, m_opponentWidgets) { opponentWidget->enterGameMode(this); }
     mp_gameEventHandler = new GameEventHandler(this);
     mp_gameEventHandler->connectSlots(mp_serverConnection->parser());
 }
 
-Game::~Game()
-{
+Game::~Game() {
 }
 
-
-void Game::setPlayerId(int playerId)
-{
+void Game::setPlayerId(int playerId) {
     m_playerId = playerId;
 }
 
-void Game::setGameState(const GameState& gameState)
-{
+void Game::setGameState(const GameState& gameState) {
     m_gameState = gameState;
 }
 
-void Game::setGameContext(const GameContextData& gameContextData)
-{
+void Game::setGameContext(const GameContextData& gameContextData) {
     if (m_gameState != GAMESTATE_PLAYING && m_gameState != GAMESTATE_FINISHED)
         return;
 
-    PlayerWidget* currentPlayer = playerWidget(currentPlayerId());
+    PlayerWidget* currentPlayer   = playerWidget(currentPlayerId());
     PlayerWidget* requestedPlayer = playerWidget(requestedPlayerId());
     if (currentPlayer) {
         currentPlayer->setCurrent(0);
@@ -97,8 +87,8 @@ void Game::setGameContext(const GameContextData& gameContextData)
         requestedPlayer->update();
     }
     m_gameContextData = gameContextData;
-    currentPlayer = playerWidget(currentPlayerId());
-    requestedPlayer = playerWidget(requestedPlayerId());
+    currentPlayer     = playerWidget(currentPlayerId());
+    requestedPlayer   = playerWidget(requestedPlayerId());
 
     if (currentPlayer) {
         currentPlayer->setCurrent(1);
@@ -116,141 +106,132 @@ void Game::setGameContext(const GameContextData& gameContextData)
 
     mp_localPlayerWidget->setFromContext(gameContextData);
 
-
     if (gamePlayState() == GAMEPLAYSTATE_DRAW) {
         emit emitLogMessage("<br />");
     }
-
 
     if (!requestedPlayer || !requestedPlayer->isLocalPlayer()) {
         unsetTextInfo();
         return;
     }
 
-
-
     if (gamePlayState() == GAMEPLAYSTATE_RESPONSE) {
         PlayerWidget* causedBy = gameContextData.causedBy ? playerWidget(gameContextData.causedBy) : 0;
-        QString causedByName = causedBy ? causedBy->name() : "";
+        QString causedByName   = causedBy ? causedBy->name() : "";
         QString message;
+#ifdef MULTIMEDIA_PRESENT
         QSound::play("sound/bell.wav");
-        switch(gameContextData.reactionType) {
-        case REACTION_BANG:
-            message = tr("<i>%1</i> played Bang! on you!").arg(causedByName);
-            break;
-        case REACTION_DUEL:
-            message = tr("You are in duel with <i>%1</i>.").arg(causedByName);
-            break;
-        case REACTION_GATLING:
-            message = tr("<i>%1</i> played Gatling.").arg(causedByName);
-            break;
-        case REACTION_GENERALSTORE:
-            message = tr("Shopping time. Please pick a card.").arg(causedByName);
-            break;
-        case REACTION_INDIANS:
-            message = tr("The Indians lead by <i>%1</i> are in town.").arg(causedByName);
-            break;
-        case REACTION_LASTSAVE:
-            message = tr("You've just got the fatal shot. Ya have beer?");
-            break;
-        case REACTION_KITCARLSON:
-            message = tr("Pick two cards from selection.");
-            break;
-        case REACTION_LUCKYDUKE:
-            message = tr("Feelin' lucky? Pick a card to respond with.");
-            break;
-        case REACTION_NONE:
-            NOT_REACHED();
+#endif
+        switch (gameContextData.reactionType) {
+            case REACTION_BANG:
+                message = tr("<i>%1</i> played Bang! on you!").arg(causedByName);
+                break;
+            case REACTION_DUEL:
+                message = tr("You are in duel with <i>%1</i>.").arg(causedByName);
+                break;
+            case REACTION_GATLING:
+                message = tr("<i>%1</i> played Gatling.").arg(causedByName);
+                break;
+            case REACTION_GENERALSTORE:
+                message = tr("Shopping time. Please pick a card.").arg(causedByName);
+                break;
+            case REACTION_INDIANS:
+                message = tr("The Indians lead by <i>%1</i> are in town.").arg(causedByName);
+                break;
+            case REACTION_LASTSAVE:
+                message = tr("You've just got the fatal shot. Ya have beer?");
+                break;
+            case REACTION_KITCARLSON:
+                message = tr("Pick two cards from selection.");
+                break;
+            case REACTION_LUCKYDUKE:
+                message = tr("Feelin' lucky? Pick a card to respond with.");
+                break;
+            case REACTION_NONE:
+                NOT_REACHED();
         }
         setTextInfo(message);
     } else if (gamePlayState() == GAMEPLAYSTATE_DRAW) {
         setTextInfo(tr("It's your turn. Good luck!"));
+#ifdef MULTIMEDIA_MODULE_PRESENT
         QSound::play("sound/bell.wav");
+#endif
     } else if (gamePlayState() == GAMEPLAYSTATE_DISCARD) {
         setTextInfo(tr("You need to discard some cards!"));
-    } else{
+    } else {
         unsetTextInfo();
     }
 }
 
-void Game::setSelection(QList<CardData> cards)
-{
+void Game::setSelection(QList<CardData> cards) {
     if (m_gameState != GAMESTATE_PLAYING && m_gameState != GAMESTATE_FINISHED)
         return;
 
     mp_selection->clear();
-    foreach(const CardData& card, cards) {
+    foreach (const CardData& card, cards) {
         CardWidget* cardWidget = m_cardWidgetFactory.createPlayingCard(0);
         cardWidget->setCardData(card);
         mp_selection->push(cardWidget);
     }
 }
 
-void Game::setIsCreator(bool isCreator)
-{
+void Game::setIsCreator(bool isCreator) {
     m_isCreator = isCreator;
 }
 
-void Game::setGraveyard(const CardData& data)
-{
+void Game::setGraveyard(const CardData& data) {
     if (m_interface != GameInterface)
         return;
     mp_graveyard->setFirstCard(data);
 }
 
-void Game::validate()
-{
-    switch(m_gameState) {
-    case GAMESTATE_INVALID:
-    case GAMESTATE_WAITINGFORPLAYERS:
-        if (m_isCreator) {
-            if (m_interface == CreatorInterface) return;
+void Game::validate() {
+    switch (m_gameState) {
+        case GAMESTATE_INVALID:
+        case GAMESTATE_WAITINGFORPLAYERS:
+            if (m_isCreator) {
+                if (m_interface == CreatorInterface)
+                    return;
+                unloadInterface();
+                loadCreatorInterface();
+            } else {
+                unloadInterface();
+            }
+            break;
+        case GAMESTATE_PLAYING:
+        case GAMESTATE_FINISHED:
             unloadInterface();
-            loadCreatorInterface();
-        } else {
-            unloadInterface();
-        }
-        break;
-    case GAMESTATE_PLAYING:
-    case GAMESTATE_FINISHED:
-        unloadInterface();
-        loadGameInterface();
-        break;
+            loadGameInterface();
+            break;
     }
 }
 
-void Game::clear()
-{
+void Game::clear() {
     unloadInterface();
     mp_localPlayerWidget->leaveGameMode();
-    foreach(OpponentWidget* opponentWidget, m_opponentWidgets)
+    foreach (OpponentWidget* opponentWidget, m_opponentWidgets)
         opponentWidget->leaveGameMode();
     unsetTextInfo();
     mp_gameEventHandler->clear();
 }
 
-void Game::setTextInfo(const QString& text)
-{
+void Game::setTextInfo(const QString& text) {
     mp_statusLabel->setText(text);
 }
 
-void Game::unsetTextInfo()
-{
+void Game::unsetTextInfo() {
     mp_statusLabel->setText("");
 }
 
-void Game::loadCreatorInterface()
-{
+void Game::loadCreatorInterface() {
     Q_ASSERT(mp_startButton == 0);
     Q_ASSERT(mp_middleWidget->layout() == 0);
     mp_startButton = new QPushButton(mp_middleWidget);
-    QBoxLayout* l = new QBoxLayout(QBoxLayout::LeftToRight);
+    QBoxLayout* l  = new QBoxLayout(QBoxLayout::LeftToRight);
     mp_startButton->setText(tr("Start game"));
     mp_startButton->setEnabled(0);
-    connect(mp_startButton, SIGNAL(clicked()),
-            this, SLOT(startButtonClicked()));
-    connect(mp_serverConnection, SIGNAL(gameCanBeStarted(bool)),
-            this, SLOT(gameCanBeStarted(bool)));
+    connect(mp_startButton, SIGNAL(clicked()), this, SLOT(startButtonClicked()));
+    connect(mp_serverConnection, SIGNAL(gameCanBeStarted(bool)), this, SLOT(gameCanBeStarted(bool)));
     l->addStretch(1);
     l->addWidget(mp_startButton);
     l->addStretch(1);
@@ -258,8 +239,7 @@ void Game::loadCreatorInterface()
     m_interface = CreatorInterface;
 }
 
-void Game::unloadCreatorInterface()
-{
+void Game::unloadCreatorInterface() {
     Q_ASSERT(mp_startButton != 0);
     Q_ASSERT(mp_middleWidget->layout() != 0);
     mp_startButton->deleteLater();
@@ -268,8 +248,7 @@ void Game::unloadCreatorInterface()
     m_interface = NoInterface;
 }
 
-void Game::loadGameInterface()
-{
+void Game::loadGameInterface() {
     Q_ASSERT(mp_deck == 0);
     Q_ASSERT(mp_graveyard == 0);
     Q_ASSERT(mp_selection == 0);
@@ -305,8 +284,7 @@ void Game::loadGameInterface()
     m_interface = GameInterface;
 }
 
-void Game::unloadGameInterface()
-{
+void Game::unloadGameInterface() {
     Q_ASSERT(mp_deck != 0);
     Q_ASSERT(mp_graveyard != 0);
     Q_ASSERT(mp_selection != 0);
@@ -316,31 +294,28 @@ void Game::unloadGameInterface()
     mp_graveyard->deleteLater();
     mp_selection->deleteLater();
     delete mp_middleWidget->layout();
-    m_interface = NoInterface;
-    mp_deck = 0;
+    m_interface  = NoInterface;
+    mp_deck      = 0;
     mp_graveyard = 0;
     mp_selection = 0;
 }
 
-void Game::unloadInterface()
-{
-    switch(m_interface) {
-    case NoInterface:
-        return;
-    case CreatorInterface:
-        unloadCreatorInterface();
-        return;
-    case GameInterface:
-        unloadGameInterface();
-        return;
+void Game::unloadInterface() {
+    switch (m_interface) {
+        case NoInterface:
+            return;
+        case CreatorInterface:
+            unloadCreatorInterface();
+            return;
+        case GameInterface:
+            unloadGameInterface();
+            return;
     }
 }
 
-void Game::playerJoinedGame(const PublicPlayerData& player)
-{
+void Game::playerJoinedGame(const PublicPlayerData& player) {
     int i;
-    for(i = 0; i < m_opponentWidgets.count(); ++i)
-    {
+    for (i = 0; i < m_opponentWidgets.count(); ++i) {
         OpponentWidget* w = m_opponentWidgets[i];
         if (w->isVoid()) {
             w->setFromPublicData(player);
@@ -353,37 +328,30 @@ void Game::playerJoinedGame(const PublicPlayerData& player)
     }
 }
 
-void Game::playerLeavedGame(int playerId)
-{
-    if (m_players.contains(playerId))
-    {
+void Game::playerLeavedGame(int playerId) {
+    if (m_players.contains(playerId)) {
         m_players[playerId]->clear();
         m_players.remove(playerId);
     }
 }
 
-void Game::playerUpdate(const PublicPlayerData& player)
-{
+void Game::playerUpdate(const PublicPlayerData& player) {
 
     if (m_players.contains(player.id)) {
         m_players[player.id]->setFromPublicData(player);
     }
-
 }
 
-void Game::gameCanBeStarted(bool canBeStarted)
-{
+void Game::gameCanBeStarted(bool canBeStarted) {
     mp_startButton->setEnabled(canBeStarted);
 }
 
-void Game::startButtonClicked()
-{
-    disconnect(mp_startButton, SIGNAL(clicked()),
-               this, SLOT(startButtonClicked()));
+void Game::startButtonClicked() {
+    disconnect(mp_startButton, SIGNAL(clicked()), this, SLOT(startButtonClicked()));
     mp_serverConnection->startGame();
 }
 
-//void Game::gameStarted(const StructGame&, const StructPlayerList&)
+// void Game::gameStarted(const StructGame&, const StructPlayerList&)
 //{
 //    /*
 //    int pI;
@@ -448,29 +416,22 @@ void Game::startButtonClicked()
 //    mp_middleWidget->setLayout(l3);
 //}
 
-CharacterType Game::character() const
-{
+CharacterType Game::character() const {
     return mp_localPlayerWidget->characterWidget()->character();
 }
 
-
-void Game::assignPlayerWidget(int playerId, PlayerWidget* playerWidget)
-{
+void Game::assignPlayerWidget(int playerId, PlayerWidget* playerWidget) {
     m_players[playerId] = playerWidget;
 }
 
-void Game::sendLogMessage(const QString& message)
-{
+void Game::sendLogMessage(const QString& message) {
     emit emitLogMessage(message);
 }
 
-void Game::pauseGameEvents()
-{
+void Game::pauseGameEvents() {
     mp_gameEventHandler->pause();
 }
 
-void Game::resumeGameEvents()
-{
+void Game::resumeGameEvents() {
     mp_gameEventHandler->resume();
 }
-

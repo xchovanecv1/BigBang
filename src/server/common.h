@@ -21,11 +21,12 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#include <QRandomGenerator>
 #include <QtDebug>
 
 #define NOT_REACHED() qFatal("Fatal Error: NOT_REACHED triggered at line %d of %s", __LINE__, __FILE__)
 
-#define CALL_MEMBER_FN(object,ptrToMember)  ((object).*(ptrToMember))
+#define CALL_MEMBER_FN(object, ptrToMember) ((object).*(ptrToMember))
 
 QString randomToken(int minLength, int maxLength);
 

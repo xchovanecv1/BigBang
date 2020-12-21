@@ -2,14 +2,14 @@
 #define CARDFACTORY_H
 
 #include <QMap>
+#include <QRandomGenerator>
 class PlayingCard;
 class Game;
 
 /**
  * The CardFactory class is a class that creates cards.
  */
-class CardFactory
-{
+class CardFactory {
 public:
     CardFactory();
     ~CardFactory();

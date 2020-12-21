@@ -18,138 +18,118 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 #include "gameserver.h"
-#include "game.h"
-#include "tcpserver.h"
 #include "client.h"
 #include "common.h"
+#include "game.h"
+#include "tcpserver.h"
 
-#include "gameinfo.h"
 #include "cardfactory.h"
 #include "config.h"
+#include "gameinfo.h"
 
 #include <QTcpSocket>
 #include <QXmlStreamWriter>
 
 #ifdef Q_OS_UNIX
-#include <signal.h>
+#    include <signal.h>
 #endif
 
 GameServer* GameServer::sm_instance = 0;
 
-GameServer::GameServer():
-    QObject(0),
-    m_nextClientId(0),
-    m_nextGameId(0),
-    m_maxClientCount(1)
-{
+GameServer::GameServer() : QObject(0), m_nextClientId(0), m_nextGameId(0), m_maxClientCount(1) {
 #ifdef Q_OS_UNIX
     // ignore broken-pipe signal eventually caused by sockets
     signal(SIGPIPE, SIG_IGN);
 #endif
 
-    mp_tcpServer = new TcpServer(this);
-    m_serverInfoData.name =
-            Config::instance().readString("network", "server_name");
-    m_serverInfoData.description =
-            Config::instance().readString("network", "server_description");
-    mp_cardFactory = new CardFactory();
+    mp_tcpServer                 = new TcpServer(this);
+    m_serverInfoData.name        = Config::instance().readString("network", "server_name");
+    m_serverInfoData.description = Config::instance().readString("network", "server_description");
+    mp_cardFactory               = new CardFactory();
 }
 
-GameServer::~GameServer()
-{
+GameServer::~GameServer() {
     delete mp_cardFactory;
     QCoreApplication::quit();
 }
 
-GameServer& GameServer::instance()
-{
-    if (!sm_instance) sm_instance = new GameServer();
+GameServer& GameServer::instance() {
+    if (!sm_instance)
+        sm_instance = new GameServer();
     return *sm_instance;
 }
 
-ServerInfoData GameServer::serverInfo() const
-{
+ServerInfoData GameServer::serverInfo() const {
     return m_serverInfoData;
 }
 
-void GameServer::setVersion(QString version)
-{
+void GameServer::setVersion(QString version) {
     m_version = version;
 }
 
-Game* GameServer::createGame(const CreateGameData& createGameData)
-{
-    while (!m_nextGameId || m_games.contains(m_nextGameId)) m_nextGameId++;
-    int gameId = m_nextGameId++;
-    Game* newGame = new Game(this, gameId, createGameData);
+Game* GameServer::createGame(const CreateGameData& createGameData) {
+    while (!m_nextGameId || m_games.contains(m_nextGameId))
+        m_nextGameId++;
+    int gameId      = m_nextGameId++;
+    Game* newGame   = new Game(this, gameId, createGameData);
     m_games[gameId] = newGame;
     return newGame;
 }
 
-void GameServer::removeGame(Game* game)
-{
+void GameServer::removeGame(Game* game) {
     m_games.remove(game->id());
     game->deleteLater();
 }
 
-QList<Game*> GameServer::gameList()
-{
+QList<Game*> GameServer::gameList() {
     return m_games.values();
 }
 
-Game* GameServer::game(int id)
-{
-    if (m_games.contains(id)) return m_games[id];
+Game* GameServer::game(int id) {
+    if (m_games.contains(id))
+        return m_games[id];
     return 0;
 }
 
-QList<Client*> GameServer::clientList()
-{
+QList<Client*> GameServer::clientList() {
     return m_clients.values();
 }
 
-Client* GameServer::client(int id)
-{
-    if (m_clients.contains(id)) return m_clients[id];
+Client* GameServer::client(int id) {
+    if (m_clients.contains(id))
+        return m_clients[id];
     return 0;
 }
 
-
-
-bool GameServer::listen()
-{
-    if (!mp_tcpServer->isListening() && !mp_tcpServer->listen())
-    {
-        qCritical("ERROR: Unable to listen on %s:%d", mp_tcpServer->hostAddressString().toAscii().data(),
+bool GameServer::listen() {
+    if (!mp_tcpServer->isListening() && !mp_tcpServer->listen()) {
+        qCritical("ERROR: Unable to listen on %s:%d",
+                  mp_tcpServer->hostAddressString().toLatin1().data(),
                   mp_tcpServer->port());
         return 0;
-    }
-    else
-    {
-        qWarning("Listening on %s:%d", mp_tcpServer->hostAddressString().toAscii().data(), mp_tcpServer->port());
+    } else {
+        qWarning("Listening on %s:%d", mp_tcpServer->hostAddressString().toLatin1().data(), mp_tcpServer->port());
     }
     return 1;
 }
 
-void GameServer::exit()
-{
+void GameServer::exit() {
     deleteLater();
 }
 
-void GameServer::createClient()
-{
-    if (!mp_tcpServer->hasPendingConnections()) return;
-    while (!m_nextClientId || m_clients.contains(m_nextClientId)) m_nextClientId++;
+void GameServer::createClient() {
+    if (!mp_tcpServer->hasPendingConnections())
+        return;
+    while (!m_nextClientId || m_clients.contains(m_nextClientId))
+        m_nextClientId++;
     int clientId = m_nextClientId++;
     m_clients.insert(clientId, 0);
-    QTcpSocket* socket = mp_tcpServer->nextPendingConnection();
+    QTcpSocket* socket  = mp_tcpServer->nextPendingConnection();
     m_clients[clientId] = new Client(this, clientId, socket);
-    connect(m_clients[clientId], SIGNAL(disconnected(int)),
-            this, SLOT(deleteClient(int)));
+    connect(m_clients[clientId], SIGNAL(disconnected(int)), this, SLOT(deleteClient(int)));
 }
 
-void GameServer::deleteClient(int clientId)
-{
+void GameServer::deleteClient(int clientId) {
     m_clients.remove(clientId);
 }
 
@@ -176,4 +156,3 @@ void GameServer::queryGameList(QueryResult result)
     result.sendData(x);
 }
 */
-

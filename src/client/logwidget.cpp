@@ -19,73 +19,59 @@
  ***************************************************************************/
 #include "logwidget.h"
 
-#include <QPainter>
 #include <QPaintEvent>
+#include <QPainter>
 
 using namespace client;
 
-LogWidget::LogWidget(QWidget *parent)
-: QWidget(parent), m_dataType(0)
-{
+LogWidget::LogWidget(QWidget* parent) : QWidget(parent), m_dataType(0) {
     setupUi(this);
     mp_xmlView->setFontPointSize(8);
 }
 
-
-LogWidget::~LogWidget()
-{
+LogWidget::~LogWidget() {
 }
 
-void LogWidget::paintEvent(QPaintEvent* event)
-{
+void LogWidget::paintEvent(QPaintEvent* event) {
     QPainter painter(this);
-    painter.fillRect(event->rect().intersect(contentsRect()), QColor(0, 0, 0, 32));
+    painter.fillRect(event->rect().intersected(contentsRect()), QColor(0, 0, 0, 32));
 }
 
-
-void LogWidget::appendLogMessage(QString message)
-{
+void LogWidget::appendLogMessage(QString message) {
     mp_logView->append(message);
 }
 
-
-void LogWidget::appendIncomingData(const QByteArray & data)
-{
+void LogWidget::appendIncomingData(const QByteArray& data) {
     QTextCursor x = mp_xmlView->textCursor();
     x.movePosition(QTextCursor::End);
     mp_xmlView->setTextCursor(x);
-    if (m_dataType == 2)
-    {
+    if (m_dataType == 2) {
         mp_xmlView->append("");
     }
-    if (m_dataType != 1)
-    {
+    if (m_dataType != 1) {
         mp_xmlView->setTextColor(Qt::yellow);
     }
     mp_xmlView->insertPlainText(data);
     m_dataType = 1;
-    x = mp_xmlView->textCursor();
+    x          = mp_xmlView->textCursor();
     x.movePosition(QTextCursor::End);
     mp_xmlView->setTextCursor(x);
 }
 
-void LogWidget::appendOutgoingData(const QByteArray & data)
-{
+void LogWidget::appendOutgoingData(const QByteArray& data) {
     QTextCursor x = mp_xmlView->textCursor();
     x.movePosition(QTextCursor::End);
     mp_xmlView->setTextCursor(x);
-    if (m_dataType == 1)
-    {
+    if (m_dataType == 1) {
         mp_xmlView->append("");
     }
-    if (m_dataType != 2)
-    {
+    if (m_dataType != 2) {
         mp_xmlView->setTextColor(Qt::white);
     }
     mp_xmlView->setFontPointSize(9);
     mp_xmlView->insertPlainText(data);
     m_dataType = 2;
-    x = mp_xmlView->textCursor();
+    x          = mp_xmlView->textCursor();
     x.movePosition(QTextCursor::End);
     mp_xmlView->setTextCursor(x);
 }

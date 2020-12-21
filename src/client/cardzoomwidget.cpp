@@ -1,22 +1,19 @@
 #include "cardzoomwidget.h"
 #include "game.h"
+#include <QMouseEvent>
 #include <QTime>
 #include <QTimer>
-#include <QMouseEvent>
 
 using namespace client;
 
 int CardZoomWidget::sm_minZoomTime = 500;
 
-CardZoomWidget::CardZoomWidget(Game* game, CardWidget* cardWidget):
-        CardWidget(game->mainWidget(), cardWidget->type()),
-        mp_game(game)
-{
+CardZoomWidget::CardZoomWidget(Game* game, CardWidget* cardWidget)
+    : CardWidget(game->mainWidget(), cardWidget->type()), mp_game(game) {
     clone(cardWidget);
     QPoint center = cardWidget->mapTo(mp_game->mainWidget(), cardWidget->center());
     setSize(SIZE_BIG);
-    QPoint topLeft = center - QPoint((int)(qsize().width() / 2),
-                                     (int)(qsize().height() / 2));
+    QPoint topLeft     = center - QPoint((int)(qsize().width() / 2), (int)(qsize().height() / 2));
     QPoint bottomRight = topLeft + QPoint(qsize().width(), qsize().height());
 
     if (topLeft.x() < 0) {
@@ -45,31 +42,26 @@ CardZoomWidget::CardZoomWidget(Game* game, CardWidget* cardWidget):
     show();
     grabMouse();
     mp_game->pauseGameEvents();
-    m_time.start();
+    m_time = QTime::currentTime();
 }
 
-
-void CardZoomWidget::mouseReleaseEvent(QMouseEvent*)
-{
+void CardZoomWidget::mouseReleaseEvent(QMouseEvent*) {
     onRelease();
 }
 
-void CardZoomWidget::mouseMoveEvent(QMouseEvent *ev)
-{
+void CardZoomWidget::mouseMoveEvent(QMouseEvent* ev) {
     if (!rect().contains(ev->pos()))
         onRelease();
 }
 
-void CardZoomWidget::terminate()
-{
+void CardZoomWidget::terminate() {
     releaseMouse();
     mp_game->resumeGameEvents();
     deleteLater();
 }
 
-void CardZoomWidget::onRelease()
-{
-    int timeLeft = sm_minZoomTime - m_time.elapsed();
+void CardZoomWidget::onRelease() {
+    int timeLeft = sm_minZoomTime - m_time.msecsTo(QTime::currentTime());
     if (timeLeft <= 0) {
         terminate();
     } else {

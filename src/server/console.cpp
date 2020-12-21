@@ -22,41 +22,32 @@
 #include "gameserver.h"
 #include <QIODevice>
 
-Console::Console(GameServer* gameServer, FILE* in, FILE* out):
-        QThread(gameServer),
-        m_isEnabled(1),
-        m_cin(in, QIODevice::ReadOnly),
-        m_cout(out, QIODevice::WriteOnly),
-        mp_gameServer(gameServer)
-{
+Console::Console(GameServer* gameServer, FILE* in, FILE* out)
+    : QThread(gameServer), m_isEnabled(1), m_cin(in, QIODevice::ReadOnly), m_cout(out, QIODevice::WriteOnly),
+      mp_gameServer(gameServer) {
 }
 
-void Console::disable()
-{
+void Console::disable() {
     m_isEnabled = 0;
 }
 
-Console::~Console()
-{
+Console::~Console() {
     terminate();
     wait(2000);
 }
 
-void Console::run()
-{
+void Console::run() {
     init();
     doLoop();
 }
 
-void Console::init()
-{
+void Console::init() {
     console_register_commands();
-    m_cout << QString("Welcome to KBang Server version %1.").arg(mp_gameServer->version()) << endl;
+    m_cout << QString("Welcome to KBang Server version %1.").arg(mp_gameServer->version()) << Qt::endl;
     Console::msleep(500);
 }
 
-void Console::doLoop()
-{
+void Console::doLoop() {
     while (m_isEnabled) {
         writePrompt();
         QString line = m_cin.readLine();
@@ -72,29 +63,25 @@ void Console::doLoop()
  *
  * @param cmdString
  */
-void Console::execLine(QString cmdString)
-{
+void Console::execLine(QString cmdString) {
     QString cmdName;
     QStringList cmdArgs;
     QTextStream ss(&cmdString, QIODevice::ReadOnly);
     QString buffer;
     ss >> cmdName;
-    while (ss.status() == QTextStream::Ok)
-    {
+    while (ss.status() == QTextStream::Ok) {
         ss >> buffer;
-        if (buffer.size()) cmdArgs.push_back(buffer);
+        if (buffer.size())
+            cmdArgs.push_back(buffer);
     }
     ConsoleCmd* cmd = console_get_command(cmdName);
-    if (!cmd)
-    {
-        m_cout << cmdName << ": bad command" << endl;
+    if (!cmd) {
+        m_cout << cmdName << ": bad command" << Qt::endl;
         return;
     }
-    (*cmd)(cmdArgs, *this); 
+    (*cmd)(cmdArgs, *this);
 }
 
-void Console::writePrompt()
-{
-    m_cout << "> " << flush;
+void Console::writePrompt() {
+    m_cout << "> " << Qt::flush;
 }
-

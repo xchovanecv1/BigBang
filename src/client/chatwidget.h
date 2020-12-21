@@ -20,31 +20,29 @@
 #ifndef CHATWIDGET_H
 #define CHATWIDGET_H
 
-#include <QWidget>
 #include "ui_chatwidget.h"
+#include <QString>
+#include <QWidget>
 
-namespace client
-{
+namespace client {
 
-/**
- *@author MacJariel <echo "badmailet@gbalt.dob" | tr "edibmlt" "ecrmjil">
- */
-class ChatWidget : public QWidget, public Ui::ChatWidget
-{
-Q_OBJECT
-public:
-    ChatWidget(QWidget *parent = 0);
-    ~ChatWidget();
-    virtual void paintEvent(QPaintEvent* event);
-    void clear();
+    /**
+     *@author MacJariel <echo "badmailet@gbalt.dob" | tr "edibmlt" "ecrmjil">
+     */
+    class ChatWidget : public QWidget, public Ui::ChatWidget {
+        Q_OBJECT
+    public:
+        ChatWidget(QWidget* parent = 0);
+        ~ChatWidget();
+        virtual void paintEvent(QPaintEvent* event);
+        void clear();
 
-public slots:
-    void incomingMessage(int senderId, const QString& senderName, const QString& message);
-    void sendMessage();
+    public slots:
+        void incomingMessage(int senderId, const QString& senderName, const QString& message);
+        void sendMessage();
 
-signals:
-    void outgoingMessage(const QString& message);
-
-};
-}
+    signals:
+        void outgoingMessage(const QString& message);
+    };
+} // namespace client
 #endif

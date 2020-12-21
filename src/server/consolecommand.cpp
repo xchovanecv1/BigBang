@@ -18,76 +18,71 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include <QTextStream>
 #include <QStringList>
 #include <QTcpSocket>
+#include <QTextStream>
 
-#include "consolecommand.h"
+#include "client.h"
 #include "console.h"
-#include "gameserver.h"
+#include "consolecommand.h"
 #include "game.h"
 #include "gameinfo.h"
+#include "gameserver.h"
 #include "player.h"
-#include "client.h"
 
 #include "voidai.h"
-
-
 
 #define CMDDEF(name) bool name(const QStringList& args, Console& console)
 #define CMDREG(name, function) cmdHash.insert(name, function)
 #define CMDALIAS(name, alias) cmdHash.insert(name, cmdHash[alias])
-#define CMD_ASSERT_ARG_CNT(cnt) if (args.size() != cnt) { console.cout() << QString("Bad arguments count, expected %1.").arg(cnt); return 1; }
-
-
+#define CMD_ASSERT_ARG_CNT(cnt)                                                                                        \
+    if (args.size() != cnt) {                                                                                          \
+        console.cout() << QString("Bad arguments count, expected %1.").arg(cnt);                                       \
+        return 1;                                                                                                      \
+    }
 
 QHash<QString, ConsoleCmd*> cmdHash;
 
-
-ConsoleCmd* console_get_command(const QString& cmdName)
-{
-    if (cmdHash.contains(cmdName))
-    {
+ConsoleCmd* console_get_command(const QString& cmdName) {
+    if (cmdHash.contains(cmdName)) {
         return cmdHash.value(cmdName);
     }
     return 0;
 }
 
-CMDDEF(console_help)
-{
-    (void) args;
-    console.cout() << "Help" << endl;
+CMDDEF(console_help) {
+    (void)args;
+    console.cout() << "Help" << Qt::endl;
     return 1;
 }
 
-CMDDEF(console_quit)
-{
-    (void) args;
-    (void) console;
+CMDDEF(console_quit) {
+    (void)args;
+    (void)console;
     console.disable();
     GameServer::instance().exit();
     return 1;
 }
 
-CMDDEF(console_list_games)
-{
+CMDDEF(console_list_games) {
     Q_UNUSED(args);
-    foreach(Game* game, GameServer::instance().gameList()) {
-        console.cout() << "--------------------------------------------------------------------------------" << endl;
-        console.cout() << " " << game->gameInfo().name() << " (id: " << game->id() << ")" << endl;
-        console.cout() << "--------------------------------------------------------------------------------" << endl;
-        foreach(Player* player, game->playerList()) {
-            console.cout() << "  " << player->id() << ": " << player->name() << endl;
+    foreach (Game* game, GameServer::instance().gameList()) {
+        console.cout() << "--------------------------------------------------------------------------------"
+                       << Qt::endl;
+        console.cout() << " " << game->gameInfo().name() << " (id: " << game->id() << ")" << Qt::endl;
+        console.cout() << "--------------------------------------------------------------------------------"
+                       << Qt::endl;
+        foreach (Player* player, game->playerList()) {
+            console.cout() << "  " << player->id() << ": " << player->name() << Qt::endl;
         }
-        console.cout() << endl << endl;
+        console.cout() << Qt::endl << Qt::endl;
     }
     return 0;
 }
 
-CMDDEF(console_list_clients)
-{
+CMDDEF(console_list_clients) {
     Q_UNUSED(args);
-    foreach(Client* client, GameServer::instance().clientList()) {
+    foreach (Client* client, GameServer::instance().clientList()) {
         console.cout() << "  " << client->id() << ", " << client->address() << ", ";
         if (client->gameId() == 0) {
             console.cout() << "not in game";
@@ -100,60 +95,56 @@ CMDDEF(console_list_clients)
                 console.cout() << QString(" as %1 (%2)").arg(player->name()).arg(player->id());
             }
         }
-        console.cout() << endl;
+        console.cout() << Qt::endl;
     }
     return 0;
 }
 
-CMDDEF(console_dump_clients)
-{
+CMDDEF(console_dump_clients) {
     Q_UNUSED(args);
-    QString dumpFileName = QString("client-dump-%1.log").
-                          arg(QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss"));
+    QString dumpFileName = QString("client-dump-%1.log").arg(QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss"));
     QFile dumpFile(dumpFileName);
     dumpFile.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text);
     QTextStream out(&dumpFile);
 
     out.setPadChar('*');
-    out << qSetFieldWidth(80) << center << " KBang Server: client dump " <<
-            reset << endl;
+    out << qSetFieldWidth(80) << Qt::center << " KBang Server: client dump " << Qt::reset << Qt::endl;
     out.setPadChar('*');
-    out << qSetFieldWidth(80) << center << QDateTime::currentDateTime().
-            toString("yyyy/MM/dd hh:mm:ss") << reset << endl << endl;
+    out << qSetFieldWidth(80) << Qt::center << QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss") << Qt::reset
+        << Qt::endl
+        << Qt::endl;
 
     out.setPadChar('-');
     out << qSetFieldWidth(80) << "";
-    out << reset << endl;
+    out << Qt::reset << Qt::endl;
 
-    out << "| " << qSetFieldWidth(4) << center << "Id" << reset << " | ";
-    out << qSetFieldWidth(16) << center << "Ip Address" << reset << " | ";
-    out << qSetFieldWidth(6) << center << "GameId" << reset << " | ";
-    out << qSetFieldWidth(11) << center << "SocketState" << reset << " | ";
-    out << qSetFieldWidth(27) << center << "SocketError" << reset << " |";
-    out << endl;
+    out << "| " << qSetFieldWidth(4) << Qt::center << "Id" << Qt::reset << " | ";
+    out << qSetFieldWidth(16) << Qt::center << "Ip Address" << Qt::reset << " | ";
+    out << qSetFieldWidth(6) << Qt::center << "GameId" << Qt::reset << " | ";
+    out << qSetFieldWidth(11) << Qt::center << "SocketState" << Qt::reset << " | ";
+    out << qSetFieldWidth(27) << Qt::center << "SocketError" << Qt::reset << " |";
+    out << Qt::endl;
 
     out.setPadChar('-');
     out << qSetFieldWidth(80) << "";
-    out << reset << endl;
+    out << Qt::reset << Qt::endl;
 
-    foreach(Client* client, GameServer::instance().clientList()) {
-        out << "| " << qSetFieldWidth(4) << center << client->id() << reset << " | ";
-        out << qSetFieldWidth(16) << center << client->address() << reset << " | ";
-        out << qSetFieldWidth(6) << center << client->gameId() << reset << " | ";
-        out << qSetFieldWidth(11) << center << client->socket()->state() << reset << " | ";
-        out << qSetFieldWidth(27) << center << QString("%1, %2").
-                arg(client->socket()->error()).
-                arg(client->socket()->errorString()) << reset << " |";
-        out << reset << endl;
+    foreach (Client* client, GameServer::instance().clientList()) {
+        out << "| " << qSetFieldWidth(4) << Qt::center << client->id() << Qt::reset << " | ";
+        out << qSetFieldWidth(16) << Qt::center << client->address() << Qt::reset << " | ";
+        out << qSetFieldWidth(6) << Qt::center << client->gameId() << Qt::reset << " | ";
+        out << qSetFieldWidth(11) << Qt::center << client->socket()->state() << Qt::reset << " | ";
+        out << qSetFieldWidth(27) << Qt::center
+            << QString("%1, %2").arg(client->socket()->error()).arg(client->socket()->errorString()) << Qt::reset
+            << " |";
+        out << Qt::reset << Qt::endl;
     }
     return 0;
 }
 
-
-CMDDEF(console_set_player_password)
-{
+CMDDEF(console_set_player_password) {
     CMD_ASSERT_ARG_CNT(3);
-    int gameId = args[0].toInt();
+    int gameId   = args[0].toInt();
     int playerId = args[1].toInt();
 
     Game* game = GameServer::instance().game(gameId);
@@ -163,15 +154,15 @@ CMDDEF(console_set_player_password)
     }
     Player* player = game->player(playerId);
     if (player == 0) {
-        console.cout() << QString("The player id %1 in game %2 does not exist.").arg(playerId).arg(game->gameInfo().name());
+        console.cout()
+            << QString("The player id %1 in game %2 does not exist.").arg(playerId).arg(game->gameInfo().name());
         return 1;
     }
     player->setPassword(args[2]);
     return 0;
 }
 
-void console_register_commands()
-{
+void console_register_commands() {
     CMDREG("help", &console_help);
     CMDREG("quit", &console_quit);
     CMDREG("list-games", &console_list_games);
@@ -179,10 +170,8 @@ void console_register_commands()
     CMDREG("dump-clients", &console_dump_clients);
     CMDREG("set-player-password", &console_set_player_password);
 
-
     CMDALIAS("exit", "quit");
 }
-
 
 /*
 QMap<QString, ConsoleCmd*> ConsoleCmd::mp_commands;
@@ -257,6 +246,3 @@ void ConsoleCmdHelp::quit()
     ConsoleCmd::appendCommand("quit", new ConsoleCmdQuit());
 }
 */
-
-
-
